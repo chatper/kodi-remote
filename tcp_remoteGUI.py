@@ -157,10 +157,7 @@ class Gui(QWidget):
         elif e.key() == Qt.Key_Backslash:
             self.showInputDialog()
         
-            #toFile("test")
-            #self.rpc("Addons.ExecuteAddon",{"addonid":"plugin.video.exodus","params":{"action":"seasons"}}, True)
-            #self.rpc("GUI.ActivateWindow",{"window":"video", "parameters":["sources://video"]}, True)
-    
+        
     def rpc(self, method, params, should_respond):
         d = {
             "jsonrpc": "2.0",
@@ -191,35 +188,6 @@ class Gui(QWidget):
 def timeToDuration(time):
     duration = time['hours']*3600 + time['minutes']*60 + time['seconds']
     return duration
-
-def toFile(url):
-    directory = "./last/"
-    if not os.path.exists(directory):
-        os.makedirs(directory)
-    
-    file = open(directory + "info.txt", "w")
-
-    file.write(url)
-
-    file.close()
-
-    
-def batch(socket):
-    d1 = {
-        "jsonrpc": "2.0",
-        "method": "Input.ExecuteAction",
-        "params": {"action":"stop"},
-        "id": 1
-        }
-    d2 = {
-        "jsonrpc": "2.0",
-        "method": "Input.ExecuteAction",
-        "params": {"action":"down"},
-        "id": 1
-        }
-    batch = [d1,d2]
-    m = json.dumps(batch)
-    socket.send(m.encode())
 
 
 if __name__ == '__main__':
