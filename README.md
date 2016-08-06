@@ -1,1 +1,1 @@
-# kodi-python-remote
+# kodi-remote
