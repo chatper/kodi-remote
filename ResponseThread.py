@@ -45,6 +45,8 @@ class ResponseThread(QThread):
                             )
                         else:
                             self.mySignal.emit(d['method'], d['params']['data']['item']['title'])
+                    elif d['method'] == 'Playlist.OnAdd':
+                        self.mySignal.emit(d['method'], d['params']['data']['item']['showtitle'] + ' - ' + d['params']['data']['item']['title'] )
                     else:
                         self.mySignal.emit(d['method'], 'OK')
                 else:

@@ -56,6 +56,8 @@ class Gui(QWidget):
             if not self.timer.isActive():
                 self.timer.start(1000, self)
                 print('Starting timer')
+        if signal == 'Playlist.OnAdd':        
+            gui.rpc("GUI.ShowNotification",{"title":"Added to playlist!", "message":param}, False)
         if signal == 'System.OnQuit' or signal == 'System.OnRestart':
             if self.timer.isActive():
                 self.timer.stop()
@@ -140,8 +142,12 @@ class Gui(QWidget):
         elif e.key() == Qt.Key_Q:
             self.status.setText("Quiting now...")
             self.quit(True)
+        elif e.key() == Qt.Key_A:
+            self.rpc("Input.ExecuteAction",{"action":"queue"}, True)
         elif e.key() == Qt.Key_C:
             self.rpc("Input.ContextMenu",[], False)
+        elif e.key() == Qt.Key_P:
+            self.rpc("Input.ExecuteAction",{"action":"playlist"}, True)
         elif e.key() == Qt.Key_Z:
             self.rpc("Input.ExecuteAction",{"action":"aspectratio"}, False)
         elif e.key() == Qt.Key_Comma:
@@ -157,7 +163,9 @@ class Gui(QWidget):
         elif e.key() == Qt.Key_Backslash:
             self.showInputDialog()
         
-        
+            #self.rpc("Addons.ExecuteAddon",{"addonid":"plugin.video.exodus","params":{"action":"seasons"}}, True)
+            #self.rpc("GUI.ActivateWindow",{"window":"video", "parameters":["sources://video"]}, True)
+    
     def rpc(self, method, params, should_respond):
         d = {
             "jsonrpc": "2.0",
@@ -188,7 +196,7 @@ class Gui(QWidget):
 def timeToDuration(time):
     duration = time['hours']*3600 + time['minutes']*60 + time['seconds']
     return duration
-
+    
 
 if __name__ == '__main__':
     
@@ -203,12 +211,12 @@ if __name__ == '__main__':
     if args.ip:
         gui.params['ip'] = str(args.ip)
     else:
-        gui.params['ip'] = "DEFAULT_IP_HERE"
+        gui.params['ip'] = "192.168.10.10"
     
     if args.port:
         gui.params['port'] = args.port
     else:
-        gui.params['port'] = DEFAULT_PORT_HERE
+        gui.params['port'] = 9090
     
     print("Initiating tcp connection")    
     gui.mySocket.connect((gui.params['ip'],gui.params['port']))
