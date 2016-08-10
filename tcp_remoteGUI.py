@@ -226,12 +226,12 @@ if __name__ == '__main__':
     if args.ip:
         gui.params['ip'] = str(args.ip)
     else:
-        gui.params['ip'] = "192.168.10.10"
+        gui.params['ip'] = "DEFAULT_IP_HERE"
     
     if args.port:
         gui.params['port'] = args.port
     else:
-        gui.params['port'] = 9090
+        gui.params['port'] = DEFAULT_PORT_HERE
     
     print("Initiating tcp connection")    
     gui.mySocket.connect((gui.params['ip'],gui.params['port']))

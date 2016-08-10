@@ -16,4 +16,4 @@
     gui.params['ip'] = "DEFAULT_IP_HERE",
     gui.params['port'] = DEFAULT_PORT_HERE,
 so that they have useful values. From now on you can start the application by using the 'python3 tcp_remoteGUI' command with no arguments.
-5. Use your keyboard to interact with kodi.
+5. Press F1 to read about the shortcuts you can use.
