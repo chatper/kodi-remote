@@ -3,6 +3,7 @@ from PyQt5.QtWidgets import QApplication, QWidget, QInputDialog, QDialog, QLabel
 from PyQt5.QtGui import QIcon, QPixmap, QImage
 from PyQt5.QtCore import Qt, QBasicTimer
 from ResponseThread import ResponseThread
+from HelpWidget import HelpWidget
 
 class Gui(QWidget):
     
@@ -35,6 +36,7 @@ class Gui(QWidget):
         
         self.responseThread.mySignal.connect(self.handleSignals)
         self.responseThread.start()
+        
 
     def handleSignals(self, signal, param):
         #print("Signal caught")
@@ -89,8 +91,10 @@ class Gui(QWidget):
                 self.pbar.setValue((curTime/totTime)*100)
         #print (signal)
 
+
     def timerEvent(self, e):
             self.rpc("Player.GetProperties",{"playerid":1,"properties":["totaltime","time"]}, True)
+
             
     def showInputDialog(self):
         text, ok = QInputDialog.getText(self, 'Send Text', 
@@ -99,6 +103,11 @@ class Gui(QWidget):
         if ok:
             self.rpc("Input.SendText",{"text":str(text)}, False)
             
+    
+    def showHelpDialog(self):        
+        h = HelpWidget()
+        h.exec_()
+
     
     def keyPressEvent(self, e):        
         if e.key() == Qt.Key_Up:
@@ -160,11 +169,16 @@ class Gui(QWidget):
             self.rpc("Input.ExecuteAction",{"action":"subtitledelayplus"}, False)
         elif e.key() == Qt.Key_1:
             self.rpc("Addons.ExecuteAddon",{"addonid":"plugin.video.exodus"}, False)
+        elif e.key() == Qt.Key_2:
+            self.rpc("Addons.ExecuteAddon",{"addonid":"plugin.video.twitch"}, False)
+        elif e.key() == Qt.Key_F1:
+            self.showHelpDialog()
         elif e.key() == Qt.Key_Backslash:
             self.showInputDialog()
         
             #self.rpc("Addons.ExecuteAddon",{"addonid":"plugin.video.exodus","params":{"action":"seasons"}}, True)
             #self.rpc("GUI.ActivateWindow",{"window":"video", "parameters":["sources://video"]}, True)
+    
     
     def rpc(self, method, params, should_respond):
         d = {
@@ -176,6 +190,7 @@ class Gui(QWidget):
             d.update({"id":1})
         m = json.dumps(d)
         self.mySocket.send(m.encode())
+    
     
     def quit(self, shutdownKodi):
         if self.responseThread.isRunning():
@@ -211,12 +226,12 @@ if __name__ == '__main__':
     if args.ip:
         gui.params['ip'] = str(args.ip)
     else:
-        gui.params['ip'] = "192.168.10.10"
+        gui.params['ip'] = "DEFAULT_IP_HERE"
     
     if args.port:
         gui.params['port'] = args.port
     else:
-        gui.params['port'] = 9090
+        gui.params['port'] = DEFAULT_PORT_HERE
     
     print("Initiating tcp connection")    
     gui.mySocket.connect((gui.params['ip'],gui.params['port']))
