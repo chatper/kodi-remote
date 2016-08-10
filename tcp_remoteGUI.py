@@ -3,7 +3,7 @@ from PyQt5.QtWidgets import QApplication, QWidget, QInputDialog, QDialog, QLabel
 from PyQt5.QtGui import QIcon, QPixmap, QImage
 from PyQt5.QtCore import Qt, QBasicTimer
 from ResponseThread import ResponseThread
-from HelpWidget import HelpWidget
+from HelpDialog import HelpDialog
 
 class Gui(QWidget):
     
@@ -105,7 +105,7 @@ class Gui(QWidget):
             
     
     def showHelpDialog(self):        
-        h = HelpWidget()
+        h = HelpDialog()
         h.exec_()
 
     
@@ -226,12 +226,12 @@ if __name__ == '__main__':
     if args.ip:
         gui.params['ip'] = str(args.ip)
     else:
-        gui.params['ip'] = "DEFAULT_IP_HERE"
+        gui.params['ip'] = "192.168.10.10"
     
     if args.port:
         gui.params['port'] = args.port
     else:
-        gui.params['port'] = DEFAULT_PORT_HERE
+        gui.params['port'] = 9090
     
     print("Initiating tcp connection")    
     gui.mySocket.connect((gui.params['ip'],gui.params['port']))
