@@ -2,8 +2,8 @@
 
 ## Installation
 
-1. Install python3 (for Ubuntu it is as easy as ```sudo apt-get install python3```)
-2. Install pyQt5 for python3 (for Ubuntu ```sudo apt-get install python3-pyqt5```)
+1. Install python3 (for Debian/Ubuntu users it is as easy as: ```sudo apt-get install python3```)
+2. Install pyQt5 for python3 (for Debian/Ubuntu users: ```sudo apt-get install python3-pyqt5```)
 3. Download [kodi-remote] (https://github.com/chatper/kodi-remote/archive/master.zip) and unzip
 
 
