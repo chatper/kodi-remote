@@ -11,9 +11,10 @@
 
 1. Activate remote control for the kodi instance you want to control (http://kodi.wiki/view/Smart_phone/tablet#Quick_set_up_guide).
 2. Access the directory you unziped/extracted (should be 'kodi_remote-master').
-3. Edit the 'config.ini' file and change the 'default_ip' parameter to point to the IP of the kodi instance.
-4. Run the program with the command ```python3 kodi_remote.py```.
-5. Press F1 to read about the shortcuts you can use.
+3. Use the ```python3 init.py``` command to create a configuration file.
+4. Edit the 'config.ini' file you just created and change the 'default_ip' parameter to point to the IP of the kodi instance.
+5. Run the program with the command ```python3 kodi_remote.py```.
+6. Press F1 to read about the shortcuts you can use.
 
 ## Advanced Usage
 
