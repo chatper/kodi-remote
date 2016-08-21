@@ -1,9 +1,11 @@
 import sys, socket, json, urllib.request, argparse
-from PyQt5.QtWidgets import QApplication, QWidget, QInputDialog, QDialog, QLabel, QMessageBox, QProgressBar
+from PyQt5.QtWidgets import QApplication, QWidget, QInputDialog, QDialog, QLabel, QProgressBar, QGridLayout
 from PyQt5.QtGui import QIcon, QPixmap, QImage
 from PyQt5.QtCore import Qt, QBasicTimer
 from ResponseThread import ResponseThread
 from HelpDialog import HelpDialog
+from OpenDialog import OpenDialog
+from utilities import *
 
 class Gui(QWidget):
     
@@ -15,23 +17,28 @@ class Gui(QWidget):
         self.responseThread = ResponseThread(self.mySocket)
         self.isPlaying = False
         
-        self.setGeometry(300, 300, 420, 420)
+        self.setGeometry(300, 200, 300, 200)
         self.setWindowTitle('Kodi Remote Control')
-        self.setWindowIcon(QIcon('./img/icon.png'))
+        self.setWindowIcon(QIcon(ICON_PATH))
         
-        self.img = QLabel('img', self)
-        self.img.setGeometry((420-256)/2,(380-256)/2,256,256)
-        self.img.setPixmap(QPixmap('./img/splash.png'))
+        self.img = QLabel('img')
+        self.img.setPixmap(QPixmap(IMG_PATH))
         
-        self.status = QLabel('OK', self)
-        self.status.setGeometry(0,380,400,20)
+        self.status = QLabel('OK')
         
-        self.pbar = QProgressBar(self)
-        self.pbar.setGeometry(0,400,410,20)
+        self.pbar = QProgressBar()
         self.progress = 0
         
         self.timer = QBasicTimer()
         
+        grid = QGridLayout()
+        grid.setSpacing(10)
+        
+        grid.addWidget(self.img, 0, 0, Qt.AlignCenter)
+        grid.addWidget(self.status, 1, 0, Qt.AlignLeft)
+        grid.addWidget(self.pbar, 2, 0)
+        
+        self.setLayout(grid)
         self.show()
         
         self.responseThread.mySignal.connect(self.handleSignals)
@@ -46,19 +53,19 @@ class Gui(QWidget):
         if signal == 'Player.OnStop':
             self.isPlaying = False
             self.status.setText( 'Nothing playing now' )
-            self.img.setPixmap(QPixmap('./img/splash.png'))
+            self.img.setPixmap(QPixmap(IMG_PATH))
             if self.timer.isActive():
                 self.timer.stop()
                 self.pbar.setValue(0)
                 print('Stoping timer')
-        if signal == 'Player.OnPlay':
+        if signal == 'play':
             self.isPlaying = True
             self.status.setText( param )
             self.rpc("Player.GetItem",{"properties":["thumbnail","fanart"],"playerid":1}, True)
             if not self.timer.isActive():
                 self.timer.start(1000, self)
                 print('Starting timer')
-        if signal == 'Playlist.OnAdd':        
+        if signal == 'queue':        
             gui.rpc("GUI.ShowNotification",{"title":"Added to playlist!", "message":param}, False)
         if signal == 'System.OnQuit' or signal == 'System.OnRestart':
             if self.timer.isActive():
@@ -66,29 +73,22 @@ class Gui(QWidget):
                 print('Stoping timer')
             self.quit(False)
         if signal == 'thumbnail':
-            url = param.split('image://',1)[1]
-            url = url[0:(len(url)-1)]
-            url = urllib.parse.unquote(url)
-            img_arr = urllib.request.urlopen(url).read()
-            qImg = QImage()
-            qImg.loadFromData(img_arr)
-            self.img.setPixmap(QPixmap(qImg))
+            url = urllib.parse.unquote(param)
+            try:
+                img_arr = urllib.request.urlopen(url).read()
+                qImg = QImage()
+                qImg.loadFromData(img_arr)
+                self.img.setPixmap(QPixmap(qImg))
+            except Exception as e:
+                print("---> Error while getting image: %s" % e)
         if signal == 'time':
-            param = json.loads(param)
-            totalTime = {
-                'hours' : param['totaltime']['hours'],
-                'minutes' : param['totaltime']['minutes'],
-                'seconds' : param['totaltime']['seconds']
-            }
-            time = {
-                'hours' : param['time']['hours'],
-                'minutes' : param['time']['minutes'],
-                'seconds' : param['time']['seconds']
-            }
-            totTime = timeToDuration(totalTime)
-            curTime = timeToDuration(time)
+            tokens = param.split('-',1)
+            curTime = int(tokens[0])
+            totTime = int(tokens[1])
             if totTime>0:
                 self.pbar.setValue((curTime/totTime)*100)
+        if signal == 'addons':
+            OpenDialog(param, self).exec_()
         #print (signal)
 
 
@@ -105,8 +105,7 @@ class Gui(QWidget):
             
     
     def showHelpDialog(self):        
-        h = HelpDialog()
-        h.exec_()
+        HelpDialog().exec_()
 
     
     def keyPressEvent(self, e):        
@@ -148,6 +147,8 @@ class Gui(QWidget):
                 self.rpc("Player.GetItem",{"playerid":1}, True)
             else:    
                 self.rpc("Input.Info",[], False)
+        elif e.key() == Qt.Key_O:
+            self.rpc("Addons.GetAddons",{"content":"video"}, True)
         elif e.key() == Qt.Key_Q:
             self.status.setText("Quiting now...")
             self.quit(True)
@@ -167,6 +168,10 @@ class Gui(QWidget):
             self.rpc("Input.ExecuteAction",{"action":"subtitledelayminus"}, False)
         elif e.key() == Qt.Key_BracketRight:
             self.rpc("Input.ExecuteAction",{"action":"subtitledelayplus"}, False)
+        elif e.key() == Qt.Key_Equal:
+            self.rpc("Input.ExecuteAction",{"action":"volampup"}, False)
+        elif e.key() == Qt.Key_Minus:
+            self.rpc("Input.ExecuteAction",{"action":"volampdown"}, False)
         elif e.key() == Qt.Key_1:
             self.rpc("Addons.ExecuteAddon",{"addonid":"plugin.video.exodus"}, False)
         elif e.key() == Qt.Key_2:
@@ -175,7 +180,6 @@ class Gui(QWidget):
             self.showHelpDialog()
         elif e.key() == Qt.Key_Backslash:
             self.showInputDialog()
-        
             #self.rpc("Addons.ExecuteAddon",{"addonid":"plugin.video.exodus","params":{"action":"seasons"}}, True)
             #self.rpc("GUI.ActivateWindow",{"window":"video", "parameters":["sources://video"]}, True)
     
@@ -192,6 +196,7 @@ class Gui(QWidget):
         self.mySocket.send(m.encode())
     
     
+    
     def quit(self, shutdownKodi):
         if self.responseThread.isRunning():
             #print("Killing thread")
@@ -206,11 +211,6 @@ class Gui(QWidget):
         print("Dropped tcp connection")    
         sys.exit(0) 
 
-
-
-def timeToDuration(time):
-    duration = time['hours']*3600 + time['minutes']*60 + time['seconds']
-    return duration
     
 
 if __name__ == '__main__':
@@ -226,17 +226,17 @@ if __name__ == '__main__':
     if args.ip:
         gui.params['ip'] = str(args.ip)
     else:
-        gui.params['ip'] = "DEFAULT_IP_HERE"
+        gui.params['ip'] = DEFAULT_IP
     
     if args.port:
         gui.params['port'] = args.port
     else:
-        gui.params['port'] = DEFAULT_PORT_HERE
+        gui.params['port'] = DEFAULT_PORT
     
     print("Initiating tcp connection")    
     gui.mySocket.connect((gui.params['ip'],gui.params['port']))
     
-    gui.rpc("GUI.ShowNotification",{"title":"Daddy's home!", "message":"The only rightful owner"}, False)
+    gui.rpc("GUI.ShowNotification",{"title":"Remote Control Connection", "message":TOAST}, False)
     
     app.exec()
     gui.quit(False)

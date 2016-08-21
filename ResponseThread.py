@@ -11,7 +11,13 @@ class ResponseThread(QThread):
         
     def __del__(self):
         self.wait()
-        
+
+    
+    def timeToDuration(self, time):
+        duration = time['hours']*3600 + time['minutes']*60 + time['seconds']
+        return duration
+
+
     def run(self):
         print("Spawning thread")
         while True:
@@ -24,13 +30,33 @@ class ResponseThread(QThread):
                     print (d['error'])
                 elif 'result' in d:
                     if 'time' in d['result']:
-                        self.mySignal.emit('time', json.dumps(d['result']))
+                        param = d['result']
+                        totalTime = {
+                            'hours' : param['totaltime']['hours'],
+                            'minutes' : param['totaltime']['minutes'],
+                            'seconds' : param['totaltime']['seconds']
+                        }
+                        time = {
+                            'hours' : param['time']['hours'],
+                            'minutes' : param['time']['minutes'],
+                            'seconds' : param['time']['seconds']
+                        }
+                        totTime = self.timeToDuration(totalTime)
+                        curTime = self.timeToDuration(time)
+                        self.mySignal.emit('time', str(curTime) + '-' + str(totTime))
                     elif 'item' in d['result']:
                         if 'thumbnail' in d['result']['item']:
-                            d2 = d['result']['item']['thumbnail']
-                            self.mySignal.emit('thumbnail', str(d2))
+                            url = str(d['result']['item']['thumbnail'])
+                            url = url.split('image://',1)[1]
+                            url = url[0:(len(url)-1)]
+                            self.mySignal.emit('thumbnail', url)
                         else:
                             print (d['result']['item'])
+                    elif 'addons' in d['result']:
+                        s=''
+                        for addon in d['result']['addons']:
+                            s=s+addon['addonid']+'-'
+                        self.mySignal.emit('addons', s)
                     else:
                         print (d)
                 elif 'method' in d:
@@ -38,15 +64,16 @@ class ResponseThread(QThread):
                     if d['method'] == 'Player.OnPlay':
                         if d['params']['data']['item']['type'] == 'episode':
                             self.mySignal.emit(
-                                d['method'], d['params']['data']['item']['showtitle'] + 
+                                'play', d['params']['data']['item']['showtitle'] + 
                                 ' S' + str(d['params']['data']['item']['season']) +
                                 'E' + str(d['params']['data']['item']['episode']) + ' - ' +
                                 d['params']['data']['item']['title'] 
                             )
                         else:
-                            self.mySignal.emit(d['method'], d['params']['data']['item']['title'])
+                            self.mySignal.emit('play', d['params']['data']['item']['title'])
                     elif d['method'] == 'Playlist.OnAdd':
-                        self.mySignal.emit(d['method'], d['params']['data']['item']['showtitle'] + ' - ' + d['params']['data']['item']['title'] )
+                        if 'showtitle' in d['params']['data']:
+                            self.mySignal.emit('queue', d['params']['data']['item']['showtitle'] + ' - ' + d['params']['data']['item']['title'] )
                     else:
                         self.mySignal.emit(d['method'], 'OK')
                 else:
