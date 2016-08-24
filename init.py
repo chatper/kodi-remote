@@ -1,9 +1,20 @@
 import configparser, getpass
+from socket import socket, SOCK_DGRAM, AF_INET 
+
+s = socket(AF_INET, SOCK_DGRAM)
+s.connect(('google.com', 0))
+yourIP = s.getsockname()[0]
+s.close()
+
+ip = input('Enter the IP address of kodi: ')
+while not ip[0:ip.rfind('.')] == yourIP[0:yourIP.rfind('.')]:
+    print ('The IP address should be something like: %s' % yourIP)
+    ip = input('Enter the IP address of kodi: ')
 
 config = configparser.ConfigParser()
 
 config['Default'] = {
-    'default_ip' : '192.168.10.10',
+    'default_ip' : ip,
     'default_port' : '9090'
 }
 
