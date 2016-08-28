@@ -6,10 +6,8 @@ s.connect(('google.com', 0))
 yourIP = s.getsockname()[0]
 s.close()
 
+print ('The IP address of Kodi is needed in order to connect to it! Please provide it below. It should be something like: %s' % yourIP)
 ip = input('Enter the IP address of kodi: ')
-while not ip[0:ip.rfind('.')] == yourIP[0:yourIP.rfind('.')]:
-    print ('The IP address should be something like: %s' % yourIP)
-    ip = input('Enter the IP address of kodi: ')
 
 config = configparser.ConfigParser()
 
