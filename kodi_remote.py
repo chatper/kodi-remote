@@ -1,5 +1,5 @@
 import sys, socket, json, urllib.request, argparse
-from PyQt5.QtWidgets import QApplication, QWidget, QInputDialog, QDialog, QLabel, QProgressBar, QGridLayout
+from PyQt5.QtWidgets import QApplication, QWidget, QInputDialog, QDialog, QLabel, QProgressBar, QVBoxLayout
 from PyQt5.QtGui import QIcon, QPixmap, QImage
 from PyQt5.QtCore import Qt, QBasicTimer
 from ResponseThread import ResponseThread
@@ -31,22 +31,22 @@ class Gui(QWidget):
         
         self.timer = QBasicTimer()
         
-        grid = QGridLayout()
-        grid.setSpacing(10)
+        box = QVBoxLayout()
+        box.setSpacing(10)
         
-        grid.addWidget(self.img, 0, 0, Qt.AlignCenter)
-        grid.addWidget(self.status, 1, 0, Qt.AlignLeft)
-        grid.addWidget(self.pbar, 2, 0)
+        box.addWidget(self.img, Qt.AlignCenter)
+        box.addWidget(self.status, Qt.AlignLeft)
+        box.addWidget(self.pbar)
         
-        self.setLayout(grid)
+        self.setLayout(box)
         self.show()
+        self.setFixedSize(self.size())
         
         self.responseThread.mySignal.connect(self.handleSignals)
         self.responseThread.start()
         
 
     def handleSignals(self, signal, param):
-        #print("Signal caught")
         if signal == 'Input.OnInputRequested':
             self.showInputDialog()
             print("Text sending")
@@ -180,9 +180,7 @@ class Gui(QWidget):
             self.showHelpDialog()
         elif e.key() == Qt.Key_Backslash:
             self.showInputDialog()
-            #self.rpc("Addons.ExecuteAddon",{"addonid":"plugin.video.exodus","params":{"action":"seasons"}}, True)
-            #self.rpc("GUI.ActivateWindow",{"window":"video", "parameters":["sources://video"]}, True)
-    
+            
     
     def rpc(self, method, params, should_respond):
         d = {
@@ -211,7 +209,6 @@ class Gui(QWidget):
         print("Dropped tcp connection")    
         sys.exit(0) 
 
-    
 
 if __name__ == '__main__':
     
