@@ -1,5 +1,5 @@
 import sys, socket, json, urllib.request, argparse
-from PyQt5.QtWidgets import QApplication, QWidget, QInputDialog, QDialog, QLabel, QProgressBar, QVBoxLayout
+from PyQt5.QtWidgets import QApplication, QWidget, QInputDialog, QDialog, QLabel, QProgressBar, QHBoxLayout, QVBoxLayout
 from PyQt5.QtGui import QIcon, QPixmap, QImage
 from PyQt5.QtCore import Qt, QBasicTimer
 from ResponseThread import ResponseThread
@@ -32,11 +32,12 @@ class Gui(QWidget):
         self.timer = QBasicTimer()
         
         box = QVBoxLayout()
-        box.setSpacing(10)
         
-        box.addWidget(self.img, Qt.AlignCenter)
-        box.addWidget(self.status, Qt.AlignLeft)
+        box.addWidget(self.img,Qt.AlignCenter)
+        box.addWidget(self.status)
         box.addWidget(self.pbar)
+        
+        #box.setAlignment(Qt.AlignCenter)
         
         self.setLayout(box)
         self.show()
@@ -180,7 +181,7 @@ class Gui(QWidget):
             self.showHelpDialog()
         elif e.key() == Qt.Key_Backslash:
             self.showInputDialog()
-            
+    
     
     def rpc(self, method, params, should_respond):
         d = {
