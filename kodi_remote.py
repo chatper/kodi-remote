@@ -17,7 +17,7 @@ class Gui(QWidget):
         self.responseThread = ResponseThread(self.mySocket)
         self.isPlaying = False
         
-        self.setGeometry(300, 200, 300, 200)
+        self.setGeometry(300, 200, 280, 300)
         self.setWindowTitle('Kodi Remote Control')
         self.setWindowIcon(QIcon(ICON_PATH))
         
@@ -33,11 +33,9 @@ class Gui(QWidget):
         
         box = QVBoxLayout()
         
-        box.addWidget(self.img,Qt.AlignCenter)
+        box.addWidget(self.img)
         box.addWidget(self.status)
         box.addWidget(self.pbar)
-        
-        #box.setAlignment(Qt.AlignCenter)
         
         self.setLayout(box)
         self.show()
@@ -181,7 +179,7 @@ class Gui(QWidget):
             self.showHelpDialog()
         elif e.key() == Qt.Key_Backslash:
             self.showInputDialog()
-    
+            
     
     def rpc(self, method, params, should_respond):
         d = {
